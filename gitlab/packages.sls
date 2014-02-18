@@ -7,6 +7,7 @@ gitlab-deps:
       - binutils
       - bison
       - byacc
+      - ca-certificates
       - crontabs
       - cscope
       - ctags
@@ -47,7 +48,9 @@ gitlab-deps:
       - patchutils
       - perl-Time-HiRes
       - pkgconfig
+      {% if salt['pillar.get']('gitlab:db_engine', postgresql) == 'postgresql' %}
       - postgresql-devel
+      {% endif %}
       - python-devel
       - rcs
       - readline
@@ -69,6 +72,7 @@ gitlab-deps:
 {% elif grains['os_family'] == 'Debian' %}
     - pkgs:
       - build-essential
+      - ca-certificates
       - checkinstall
       - curl
       - libcurl4-openssl-dev
@@ -89,6 +93,9 @@ gitlab-deps:
       - zlib1g-dev
       {% if salt['pillar.get']('gitlab:db_engine', postgresql) == 'postgresql' %}
       - libpq-dev
+      {% elif salt['pillar.get']('gitlab:db_engine', postgresql) == 'mysql2' %}
+      - ruby-mysql2
+      - libmysqlclient-dev
       {% endif %}
 {% endif %}
 
