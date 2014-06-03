@@ -91,14 +91,20 @@ gitlab-initialize:
   cmd.wait:
     - user: git
     - cwd: /home/git/gitlab
-    - name: echo yes | bundle exec rake gitlab:setup RAILS_ENV=production
+    - name: echo yes | bundle exec rake gitlab:setup RAILS_ENV=production && touch test -f /home/git/gitlab/.db_installed
     - shell: /bin/bash
-    - unless: psql -U {{ salt['pillar.get']('gitlab:db_user') }} {{ salt['pillar.get']('gitlab:db_name') }} -c 'select * from users;'
+    - unless: test -f /home/git/gitlab/.db_installed
     - watch:
       - git: gitlab-git
     - require:
       - cmd: gitlab-gems
+      {% if salt['pillar.get']('gitlab:db_local', true) %}
+      {% if salt['pillar.get']('gitlab:db_engine') == 'postgresql' %}
       - postgres_database: gitlab-db
+      {% elif salt['pillar.get']('gitlab:db_engine') == 'mysql2' %}
+      - mysql_database: gitlab-db
+      {% endif %}
+      {% endif %}
 
 # When code changes, trigger upgrade procedure
 # Based on https://gitlab.com/gitlab-org/gitlab-ce/blob/master/lib/gitlab/upgrader.rb
@@ -106,7 +112,11 @@ gitlab-gems:
   cmd.wait:
     - user: git
     - cwd: /home/git/gitlab
-    - name: bundle install --deployment --without development test mysql aws
+    {% if salt['pillar.get']('gitlab:db_engine') == 'postgresql' %}
+    - name: bundle install --deployment --without development test aws mysql
+    {% elif salt['pillar.get']('gitlab:db_engine') == 'mysql2' %}
+    - name: bundle install --deployment --without development test aws postgres
+    {% endif %}
     - shell: /bin/bash
     - watch:
       - git: gitlab-git
@@ -128,7 +138,13 @@ gitlab-migrate-db:
     - require:
       - cmd: gitlab-gems
       - cmd: gitlab-initialize
+      {% if salt['pillar.get']('gitlab:db_local', true) %}
+      {% if salt['pillar.get']('gitlab:db_engine') == 'postgresql' %}
       - postgres_database: gitlab-db
+      {% elif salt['pillar.get']('gitlab:db_engine') == 'mysql2' %}
+      - mysql_database: gitlab-db
+      {% endif %}
+      {% endif %}
 
 gitlab-recompile-assets:
   cmd.wait:

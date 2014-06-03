@@ -3,10 +3,13 @@ gitlab:
   rvm_ruby: 2.1.0
   shell_version: v1.8.0
   gitlab_version: 6-5-stable
-  db_engine: postgresql
+  db_engine: 'postgresql' # postgresql or mysql2
   db_name: 'gitlabhq_production'
   db_user: 'git'
   db_pass: 'MyVerySecretGitLabPassword'
+  db_local: true # false to use a remote database
+  db_host: 'localhost'
+  #db_port: '' # only needed for remote databases
   gravatar:
     enabled: false
   ldap:

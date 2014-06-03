@@ -2,25 +2,27 @@
 # PRODUCTION
 #
 production:
-  adapter: postgresql
-  encoding: unicode
+  adapter: {{ salt['pillar.get']('gitlab:db_engine') }}
+  encoding: {% if salt['pillar.get']('gitlab:db_engine') == 'postgresql' %}unicode{% elif salt['pillar.get']('gitlab:db_engine') == 'mysql2' %}utf8{% endif %}
   database: {{ salt['pillar.get']('gitlab:db_name') }}
   pool: 10
   username: {{ salt['pillar.get']('gitlab:db_user') }}
   password: {{ salt['pillar.get']('gitlab:db_pass') }}
-  # host: localhost
-  # port: 5432 
+  host: {{ salt['pillar.get']('gitlab:db_host') }}
+  {% if salt['pillar.get']('gitlab:db_remote', false) %}
+  port: {{ salt['pillar.get']('gitlab:db_port') }}
+  {%- endif %}
   # socket: /tmp/postgresql.sock
 
 #
 # Development specific
 #
 development:
-  adapter: postgresql
-  encoding: unicode
+  adapter: {{ salt['pillar.get']('gitlab:db_engine') }}
+  encoding: {% if salt['pillar.get']('gitlab:db_engine') == 'postgresql' %}unicode{% elif salt['pillar.get']('gitlab:db_engine') == 'mysql2' %}utf8{% endif %}
   database: gitlabhq_development
   pool: 5
-  username: postgres
+  username: {{ salt['pillar.get']('gitlab:db_user') }}
   password:
   # socket: /tmp/postgresql.sock
 
@@ -28,11 +30,11 @@ development:
 # Staging specific
 #
 staging:
-  adapter: postgresql
-  encoding: unicode
+  adapter: {{ salt['pillar.get']('gitlab:db_engine') }}
+  encoding: {% if salt['pillar.get']('gitlab:db_engine') == 'postgresql' %}unicode{% elif salt['pillar.get']('gitlab:db_engine') == 'mysql2' %}utf8{% endif %}
   database: gitlabhq_staging
   pool: 5
-  username: postgres
+  username: {{ salt['pillar.get']('gitlab:db_user') }}
   password:
   # socket: /tmp/postgresql.sock
 
@@ -40,11 +42,11 @@ staging:
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test: &test
-  adapter: postgresql
-  encoding: unicode
+  adapter: {{ salt['pillar.get']('gitlab:db_engine') }}
+  encoding: {% if salt['pillar.get']('gitlab:db_engine') == 'postgresql' %}unicode{% elif salt['pillar.get']('gitlab:db_engine') == 'mysql2' %}utf8{% endif %}
   database: gitlabhq_test
   pool: 5
-  username: postgres
+  username: {{ salt['pillar.get']('gitlab:db_user') }}
   password:
   # socket: /tmp/postgresql.sock
 
